@@ -13,6 +13,7 @@ import repository.MemberRepository;
 import java.time.LocalDate;
 
 public class BookingService {
+
     private final MemberRepository memberRepo;
     private final FitnessClassRepository classRepo;
     private final ClassBookingRepository bookingRepo;
@@ -29,27 +30,49 @@ public class BookingService {
     }
 
     public void bookClass(long memberId, long classId) {
-        Member m = memberRepo.findById(memberId)
+
+        Member member = memberRepo.findById(memberId)
                 .orElseThrow(() -> new NotFoundException("Member not found: " + memberId));
 
-        FitnessClass fc = classRepo.findById(classId)
+        FitnessClass fitnessClass = classRepo.findById(classId)
                 .orElseThrow(() -> new NotFoundException("Class not found: " + classId));
 
         LocalDate today = LocalDate.now();
-        if (m.getMembershipEnd() == null || m.getMembershipEnd().isBefore(today) || "EXPIRED".equalsIgnoreCase(m.getStatus())) {
+
+        if (member.getMembershipEnd() == null ||
+                member.getMembershipEnd().isBefore(today) ||
+                "EXPIRED".equalsIgnoreCase(member.getStatus())) {
             throw new MembershipExpiredException("Membership expired for memberId=" + memberId);
         }
 
         if (bookingRepo.existsBooked(memberId, classId)) {
-            throw new BookingAlreadyExistsException("Booking already exists for memberId=" + memberId + ", classId=" + classId);
+            throw new BookingAlreadyExistsException(
+                    "Booking already exists for memberId=" + memberId + ", classId=" + classId
+            );
         }
 
-        int booked = bookingRepo.countBookedForClass(classId);
-        if (booked >= fc.getCapacity()) {
-            throw new ClassFullException("Class is full: classId=" + classId + " (capacity=" + fc.getCapacity() + ")");
+        if (bookingRepo.countBookedForClass(classId) >= fitnessClass.getCapacity()) {
+            throw new ClassFullException(
+                    "Class is full: classId=" + classId + ", capacity=" + fitnessClass.getCapacity()
+            );
         }
 
         bookingRepo.createBooked(memberId, classId);
-        notifier.notify("Booked classId=" + classId + " for memberId=" + memberId);
+        notifier.notify("Class booked for memberId=" + memberId + ", classId=" + classId);
+    }
+
+    public void viewAttendanceHistory(long memberId) {
+
+        memberRepo.findById(memberId)
+                .orElseThrow(() -> new NotFoundException("Member not found: " + memberId));
+
+        bookingRepo.findByMember(memberId).forEach(b ->
+                System.out.println(
+                        b.getId() + " " +
+                                b.getClassId() + " " +
+                                b.getStatus() + " " +
+                                b.getBookedAt()
+                )
+        );
     }
 }

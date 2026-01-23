@@ -12,13 +12,31 @@ import repository.jdbc.JdbcFitnessClassRepository;
 import repository.jdbc.JdbcMemberRepository;
 import repository.jdbc.JdbcMembershipTypeRepository;
 
+import java.util.Scanner;
+
 public class Main {
+
     public static void main(String[] args) {
+
         String url = "jdbc:postgresql://aws-1-us-west-1.pooler.supabase.com:5432/postgres?sslmode=require";
         String user = "postgres.rqmqsrenkhboaelmelad";
         String password = "A9b#u#?+PLa@i?D";
 
         DatabaseConnection db = new DatabaseConnection(url, user, password);
+
+        try (var c = db.getConnection();
+             var st = c.createStatement();
+             var rs = st.executeQuery("select current_user, current_database()")) {
+
+            rs.next();
+            System.out.println("CONNECTED TO DB: " +
+                    rs.getString(1) + " / " + rs.getString(2));
+
+        } catch (Exception e) {
+            System.out.println("DATABASE CONNECTION FAILED:");
+            e.printStackTrace();
+            return;
+        }
 
         NotificationService notifier = new NotificationService();
 
@@ -33,33 +51,34 @@ public class Main {
         BookingService bookingService =
                 new BookingService(memberRepo, classRepo, bookingRepo, notifier);
 
-        long memberId = 1;
-        long membershipTypeId = 1;
-        long classId = 1;
+        Scanner sc = new Scanner(System.in);
 
-        membershipService.buyOrExtendMembership(memberId, membershipTypeId);
+        System.out.print("Enter your member ID: ");
+        long memberId = sc.nextLong();
+
+        System.out.print("Enter membership type ID (buy or extend): ");
+        long membershipTypeId = sc.nextLong();
+
+        try {
+            membershipService.buyOrExtendMembership(memberId, membershipTypeId);
+        } catch (Exception e) {
+            System.out.println("Membership error: " + e.getMessage());
+            return;
+        }
+
+        System.out.print("Enter class ID to book: ");
+        long classId = sc.nextLong();
 
         try {
             bookingService.bookClass(memberId, classId);
+            System.out.println("Class booked successfully.");
         } catch (MembershipExpiredException |
                  ClassFullException |
                  BookingAlreadyExistsException e) {
-            System.out.println(e.getMessage());
+            System.out.println("Booking error: " + e.getMessage());
         }
 
-        try {
-            bookingService.bookClass(memberId, classId);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-
-        bookingRepo.findByMember(memberId)
-                .forEach(b ->
-                        System.out.println(
-                                b.getId() + " " +
-                                        b.getClassId() + " " +
-                                        b.getStatus()
-                        )
-                );
+        System.out.println("\n--- ATTENDANCE HISTORY ---");
+        bookingService.viewAttendanceHistory(memberId);
     }
 }
