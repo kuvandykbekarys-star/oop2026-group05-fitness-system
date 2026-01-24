@@ -81,4 +81,5 @@ public class Main {
         System.out.println("\n--- ATTENDANCE HISTORY ---");
         bookingService.viewAttendanceHistory(memberId);
     }
+
 }
