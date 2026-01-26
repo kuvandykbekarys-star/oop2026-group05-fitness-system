@@ -26,4 +26,4 @@ public class FitnessClass {
     public OffsetDateTime getStartTime() { return startTime; }
     public OffsetDateTime getEndTime() { return endTime; }
     public int getCapacity() { return capacity; }
-}.
+}
