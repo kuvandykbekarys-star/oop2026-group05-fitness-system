@@ -5,3 +5,4 @@ public class NotificationService {
         System.out.println("[NOTIFY] " + message);
     }
 }
+.
