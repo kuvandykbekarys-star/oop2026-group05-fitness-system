@@ -7,3 +7,4 @@ import java.util.Optional;
 public interface FitnessClassRepository {
     Optional<FitnessClass> findById(long id);
 }
+.
