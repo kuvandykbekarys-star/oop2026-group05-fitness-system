@@ -43,4 +43,4 @@ public class MembershipService {
         notifier.notify("Membership updated for memberId=" + memberId + " until " + end);
     }
 }
-.
+
