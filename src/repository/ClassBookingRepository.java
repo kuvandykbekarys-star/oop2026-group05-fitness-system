@@ -10,4 +10,3 @@ public interface ClassBookingRepository {
     void createBooked(long memberId, long classId);
     List<ClassBooking> findByMember(long memberId);
 }
-.
