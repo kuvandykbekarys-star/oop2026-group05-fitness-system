@@ -104,3 +104,4 @@ public class JdbcClassBookingRepository implements ClassBookingRepository {
         }
     }
 }
+.

@@ -43,3 +43,4 @@ public class JdbcFitnessClassRepository implements FitnessClassRepository {
         }
     }
 }
+.
