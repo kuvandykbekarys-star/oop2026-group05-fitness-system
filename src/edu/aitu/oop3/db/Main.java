@@ -24,11 +24,13 @@ public class Main {
 
         DatabaseConnection db = new DatabaseConnection(url, user, password);
 
+        // Establishing a secure connection to the PostgreSQL database on Supabase
         try (var c = db.getConnection();
              var st = c.createStatement();
              var rs = st.executeQuery("select current_user, current_database()")) {
 
             rs.next();
+            // Outputting the connection status and database name to the console
             System.out.println("CONNECTED TO DB: " +
                     rs.getString(1) + " / " + rs.getString(2));
 
@@ -81,4 +83,5 @@ public class Main {
         System.out.println("\n--- ATTENDANCE HISTORY ---");
         bookingService.viewAttendanceHistory(memberId);
     }
+
 }
