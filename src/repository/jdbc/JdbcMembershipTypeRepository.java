@@ -40,4 +40,3 @@ public class JdbcMembershipTypeRepository implements MembershipTypeRepository {
         }
     }
 }
-.
