@@ -29,4 +29,4 @@ public class Member {
     public LocalDate getMembershipStart() { return membershipStart; }
     public LocalDate getMembershipEnd() { return membershipEnd; }
     public String getStatus() { return status; }
-}
+}.

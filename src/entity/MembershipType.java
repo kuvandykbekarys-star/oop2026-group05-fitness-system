@@ -20,3 +20,4 @@ public class MembershipType {
     public int getDurationDays() { return durationDays; }
     public BigDecimal getPrice() { return price; }
 }
+.

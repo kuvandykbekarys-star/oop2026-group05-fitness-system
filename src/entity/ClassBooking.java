@@ -23,3 +23,4 @@ public class ClassBooking {
     public OffsetDateTime getBookedAt() { return bookedAt; }
     public String getStatus() { return status; }
 }
+.
