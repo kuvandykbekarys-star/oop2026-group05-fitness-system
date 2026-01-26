@@ -82,4 +82,3 @@ public class Main {
         bookingService.viewAttendanceHistory(memberId);
     }
 }
-.
