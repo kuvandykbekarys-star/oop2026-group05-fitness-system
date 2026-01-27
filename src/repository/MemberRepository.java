@@ -13,4 +13,3 @@ public interface MemberRepository {
     void updateMembership(long memberId, long membershipTypeId, LocalDate start, LocalDate end);
     void markExpired(long memberId);
 }
-.
