@@ -1,3 +1,4 @@
+// This class implements Singleton for global gym settings [cite: 60, 80]
 package config;
 
 public final class GymConfig {
