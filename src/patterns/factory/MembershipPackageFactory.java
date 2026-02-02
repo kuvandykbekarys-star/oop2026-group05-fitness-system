@@ -1,3 +1,4 @@
+// Factory pattern for creating membership subtypes [cite: 62, 82]
 package patterns.factory;
 
 import entity.MembershipType;
