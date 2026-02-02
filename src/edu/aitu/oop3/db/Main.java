@@ -1,8 +1,6 @@
 package edu.aitu.oop3.db;
 
 import exception.BookingAlreadyExistsException;
-import exception.ClassFullException;
-import exception.MembershipExpiredException;
 import repository.ClassBookingRepository;
 import repository.FitnessClassRepository;
 import repository.MemberRepository;
@@ -11,7 +9,9 @@ import repository.jdbc.JdbcClassBookingRepository;
 import repository.jdbc.JdbcFitnessClassRepository;
 import repository.jdbc.JdbcMemberRepository;
 import repository.jdbc.JdbcMembershipTypeRepository;
+import service.MembershipQuoteService;
 
+import java.time.LocalDate;
 import java.util.Scanner;
 
 public class Main {
@@ -24,28 +24,12 @@ public class Main {
 
         DatabaseConnection db = new DatabaseConnection(url, user, password);
 
-
-        try (var c = db.getConnection();
-             var st = c.createStatement();
-             var rs = st.executeQuery("select current_user, current_database()")) {
-
-            rs.next();
-
-            System.out.println("CONNECTED TO DB: " +
-                    rs.getString(1) + " / " + rs.getString(2));
-
-        } catch (Exception e) {
-            System.out.println("DATABASE CONNECTION FAILED:");
-            e.printStackTrace();
-            return;
-        }
-
-        NotificationService notifier = new NotificationService();
-
         MemberRepository memberRepo = new JdbcMemberRepository(db);
         MembershipTypeRepository typeRepo = new JdbcMembershipTypeRepository(db);
         FitnessClassRepository classRepo = new JdbcFitnessClassRepository(db);
         ClassBookingRepository bookingRepo = new JdbcClassBookingRepository(db);
+
+        NotificationService notifier = new NotificationService();
 
         MembershipService membershipService =
                 new MembershipService(memberRepo, typeRepo, notifier);
@@ -53,35 +37,44 @@ public class Main {
         BookingService bookingService =
                 new BookingService(memberRepo, classRepo, bookingRepo, notifier);
 
+        MembershipQuoteService quoteService =
+                new MembershipQuoteService(typeRepo);
+
         Scanner sc = new Scanner(System.in);
 
-        System.out.print("Enter your member ID: ");
+        System.out.print("Member ID: ");
         long memberId = sc.nextLong();
 
-        System.out.print("Enter membership type ID (buy or extend): ");
-        long membershipTypeId = sc.nextLong();
+        System.out.print("Membership type ID: ");
+        long typeId = sc.nextLong();
 
-        try {
-            membershipService.buyOrExtendMembership(memberId, membershipTypeId);
-        } catch (Exception e) {
-            System.out.println("Membership error: " + e.getMessage());
-            return;
+        var quote = quoteService.quote(typeId, false, LocalDate.now());
+        System.out.println(
+                quote.name() + " " +
+                        quote.start() + " " +
+                        quote.end() + " " +
+                        quote.price()
+        );
+
+        membershipService.buyOrExtendMembership(memberId, typeId);
+
+        var classes = classRepo.findAll();
+        for (var c : classes) {
+            System.out.println(c.getId() + " " + c.getTitle() + " " + c.getCoach());
         }
 
-        System.out.print("Enter class ID to book: ");
+        System.out.print("Class ID to book: ");
         long classId = sc.nextLong();
 
         try {
             bookingService.bookClass(memberId, classId);
-            System.out.println("Class booked successfully.");
-        } catch (MembershipExpiredException |
-                 ClassFullException |
-                 BookingAlreadyExistsException e) {
-            System.out.println("Booking error: " + e.getMessage());
+            System.out.println("Booked successfully");
+        } catch (BookingAlreadyExistsException e) {
+            System.out.println(e.getMessage());
         }
 
-        System.out.println("\n--- ATTENDANCE HISTORY ---");
         bookingService.viewAttendanceHistory(memberId);
-    }
 
+        sc.close();
+    }
 }
