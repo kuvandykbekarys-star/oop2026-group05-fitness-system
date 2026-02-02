@@ -1,3 +1,4 @@
+// Implementation of Builder pattern for complex training plans [cite: 61, 81]
 package patterns.builder;
 
 import java.util.ArrayList;
